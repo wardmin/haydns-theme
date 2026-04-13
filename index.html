@@ -1,310 +1,294 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr. Haydn's Theme</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-const NOTES = {
-  G4: 392.0, A4: 440.0, B4: 493.88, C5: 523.25, D5: 587.33,
-  G3: 196.0, D3: 146.83, B3: 246.94,
-};
+  body {
+    background: linear-gradient(160deg, #1a0e07 0%, #2e1a0e 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    font-family: 'IM Fell English', Georgia, serif;
+  }
 
-const melody = [
-  { note: "G4", dur: 1, lyric: "My" },
-  { note: "G4", dur: 1, lyric: "dear" },
-  { note: "A4", dur: 1, lyric: "Mis-" },
-  { note: "B4", dur: 1, lyric: "-ter" },
-  { note: "A4", dur: 1, lyric: "Hay-" },
-  { note: "G4", dur: 1, lyric: "-dn," },
-  { note: "D5", dur: 1, lyric: "your" },
-  { note: "D5", dur: 1, lyric: "wig" },
-  { note: "D5", dur: 1, lyric: "is" },
-  { note: "D5", dur: 1.5, lyric: "quite" },
-  { note: "C5", dur: 0.5, lyric: "" },
-  { note: "B4", dur: 2, lyric: "fun." },
-  { note: "D5", dur: 1, lyric: "Could" },
-  { note: "D5", dur: 1, lyric: "you" },
-  { note: "C5", dur: 1, lyric: "tell" },
-  { note: "B4", dur: 1, lyric: "me" },
-  { note: "C5", dur: 1, lyric: "where" },
-  { note: "B4", dur: 1, lyric: "I" },
-  { note: "A4", dur: 1, lyric: "could" },
-  { note: "B4", dur: 3, lyric: "buy" },
-  { note: "G4", dur: 3, lyric: "one?" },
-  { note: "G4", dur: 1, lyric: "My" },
-  { note: "G4", dur: 1, lyric: "dear" },
-  { note: "A4", dur: 1, lyric: "Mis-" },
-  { note: "B4", dur: 1, lyric: "-ter" },
-  { note: "A4", dur: 1, lyric: "Hay-" },
-  { note: "G4", dur: 1, lyric: "-dn," },
-  { note: "D5", dur: 1, lyric: "your" },
-  { note: "D5", dur: 1, lyric: "wig" },
-  { note: "D5", dur: 1, lyric: "is" },
-  { note: "D5", dur: 1.5, lyric: "quite" },
-  { note: "C5", dur: 0.5, lyric: "" },
-  { note: "B4", dur: 2, lyric: "fun." },
-  { note: "D5", dur: 1, lyric: "When" },
-  { note: "D5", dur: 1, lyric: "I" },
-  { note: "C5", dur: 1, lyric: "play" },
-  { note: "B4", dur: 1, lyric: "this" },
-  { note: "C5", dur: 1, lyric: "song," },
-  { note: "B4", dur: 1, lyric: "should" },
-  { note: "A4", dur: 1, lyric: "I" },
-  { note: "B4", dur: 3, lyric: "wear" },
-  { note: "G4", dur: 3, lyric: "one?" },
+  .sheet {
+    background: linear-gradient(135deg, #f5eed8 0%, #ede0be 100%);
+    border-radius: 4px;
+    max-width: 520px;
+    width: 100%;
+    padding: 40px 44px 36px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5), 0 24px 64px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.5);
+    border: 1px solid rgba(201,168,76,0.4);
+  }
+
+  .header { text-align: center; margin-bottom: 26px; }
+  .composer { font-size: 11px; letter-spacing: .15em; text-transform: uppercase; color: #7a5c2e; margin-bottom: 6px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: 30px; font-style: italic; color: #1a1208; line-height: 1.1; margin-bottom: 4px; }
+  .subtitle { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: #9a7a4e; }
+
+  .lyric-box {
+    background: #e8dcc0;
+    border: 1px solid rgba(201,168,76,0.5);
+    border-radius: 2px;
+    padding: 14px;
+    margin-bottom: 18px;
+    text-align: center;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lyric-text { font-size: 22px; font-style: italic; color: #1a1208; transition: opacity .15s; }
+  .lyric-text.idle { font-size: 13px; font-style: normal; color: #9a7a4e; letter-spacing: .1em; }
+
+  .progress-track { width: 100%; height: 4px; background: #ddd0aa; border-radius: 2px; margin-bottom: 20px; overflow: hidden; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #7a5c2e, #c9a84c); border-radius: 2px; transition: width .1s linear; }
+
+  .tempo-row { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 20px; }
+  .tempo-label { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #7a5c2e; }
+
+  .tempo-slider { -webkit-appearance: none; width: 130px; height: 4px; background: #ddd0aa; border-radius: 2px; outline: none; cursor: pointer; }
+  .tempo-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 15px; height: 15px; background: #c9a84c; border-radius: 50%; cursor: pointer; box-shadow: 0 1px 4px rgba(0,0,0,0.3); }
+  .tempo-slider::-moz-range-thumb { width: 15px; height: 15px; background: #c9a84c; border-radius: 50%; border: none; cursor: pointer; }
+  .tempo-val { font-size: 12px; color: #7a5c2e; min-width: 58px; font-family: 'IM Fell English', Georgia, serif; }
+
+  .btn-row { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; }
+
+  .btn-play {
+    background: #1a1208; color: #c9a84c; border: 1.5px solid #c9a84c;
+    padding: 11px 34px; font-size: 15px; font-family: 'IM Fell English', Georgia, serif;
+    letter-spacing: .08em; border-radius: 2px; cursor: pointer; min-width: 136px; transition: all .15s;
+  }
+  .btn-play:hover { background: #2e1a0e; box-shadow: 0 0 16px rgba(201,168,76,0.25); }
+  .btn-play.playing { background: #6b1212; color: #fcc; border-color: #c44; }
+
+  .btn-reset {
+    background: transparent; color: #7a5c2e; border: 1px solid rgba(122,92,46,0.4);
+    padding: 11px 18px; font-size: 13px; font-family: 'IM Fell English', Georgia, serif;
+    border-radius: 2px; cursor: pointer; transition: all .15s;
+  }
+  .btn-reset:hover { background: #e8dcc0; color: #1a1208; }
+
+  .piano-section { text-align: center; }
+  .piano-label { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: #9a7a4e; margin-bottom: 10px; }
+  .keys { display: flex; gap: 5px; justify-content: center; }
+
+  .key {
+    width: 56px; height: 108px;
+    background: linear-gradient(180deg, #faf6ec 0%, #e8e0d0 100%);
+    border: 1px solid #bbb; border-radius: 0 0 7px 7px; cursor: pointer;
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 9px;
+    font-size: 13px; font-weight: bold; font-family: 'Playfair Display', serif; color: #bbb;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.18); transition: all .07s;
+    user-select: none; -webkit-user-select: none;
+  }
+  .key:hover { background: linear-gradient(180deg, #fffef5 0%, #f0e8d8 100%); }
+  .key.lit {
+    background: linear-gradient(180deg, #fff9a0 0%, #f5d800 80%);
+    border-color: #c9a84c; color: #7a5c2e;
+    box-shadow: 0 0 16px rgba(201,168,76,0.55), 0 4px 8px rgba(0,0,0,0.18);
+    transform: scaleY(0.97);
+  }
+  .key.warm { background: linear-gradient(180deg, #fdf5d0 0%, #f0e4a0 100%); color: #9a7a4e; }
+
+  .footer { text-align: center; font-size: 10px; color: #9a7a4e; margin-top: 18px; letter-spacing: .1em; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel">
+const { useState, useRef, useEffect, useCallback } = React;
+
+const FREQ = { G4:392.00, A4:440.00, B4:493.88, C5:523.25, D5:587.33 };
+
+const MELODY = [
+  {n:'G4',d:1,w:'My'},     {n:'G4',d:1,w:'dear'},  {n:'A4',d:1,w:'Mis-'},
+  {n:'B4',d:1,w:'-ter'},   {n:'A4',d:1,w:'Hay-'},  {n:'G4',d:1,w:'-dn,'},
+  {n:'D5',d:1,w:'your'},   {n:'D5',d:1,w:'wig'},   {n:'D5',d:1,w:'is'},
+  {n:'D5',d:1.5,w:'quite'},{n:'C5',d:0.5,w:''},    {n:'B4',d:2,w:'fun.'},
+  {n:'D5',d:1,w:'Could'},  {n:'D5',d:1,w:'you'},   {n:'C5',d:1,w:'tell'},
+  {n:'B4',d:1,w:'me'},     {n:'C5',d:1,w:'where'}, {n:'B4',d:1,w:'I'},
+  {n:'A4',d:1,w:'could'},  {n:'B4',d:3,w:'buy'},   {n:'G4',d:3,w:'one?'},
+  {n:'G4',d:1,w:'My'},     {n:'G4',d:1,w:'dear'},  {n:'A4',d:1,w:'Mis-'},
+  {n:'B4',d:1,w:'-ter'},   {n:'A4',d:1,w:'Hay-'},  {n:'G4',d:1,w:'-dn,'},
+  {n:'D5',d:1,w:'your'},   {n:'D5',d:1,w:'wig'},   {n:'D5',d:1,w:'is'},
+  {n:'D5',d:1.5,w:'quite'},{n:'C5',d:0.5,w:''},    {n:'B4',d:2,w:'fun.'},
+  {n:'D5',d:1,w:'When'},   {n:'D5',d:1,w:'I'},     {n:'C5',d:1,w:'play'},
+  {n:'B4',d:1,w:'this'},   {n:'C5',d:1,w:'song,'}, {n:'B4',d:1,w:'should'},
+  {n:'A4',d:1,w:'I'},      {n:'B4',d:3,w:'wear'},  {n:'G4',d:3,w:'one?'},
 ];
 
-const scaleKeys = [
-  { note: "G4", label: "G", black: false },
-  { note: "A4", label: "A", black: false },
-  { note: "B4", label: "B", black: false },
-  { note: "C5", label: "C", black: false },
-  { note: "D5", label: "D", black: false },
-];
+const SCALE_KEYS = ['G4','A4','B4','C5','D5'];
 
-function playTone(ctx, freq, when, dur, vol = 0.35) {
-  const osc = ctx.createOscillator();
-  const gain = ctx.createGain();
-  osc.connect(gain);
-  gain.connect(ctx.destination);
-  osc.type = "triangle";
+function playTone(ctx, freq, when, dur, vol = 0.38) {
+  const osc = ctx.createOscillator(), gain = ctx.createGain();
+  osc.connect(gain); gain.connect(ctx.destination);
+  osc.type = 'triangle';
   osc.frequency.setValueAtTime(freq, when);
   gain.gain.setValueAtTime(0, when);
-  gain.gain.linearRampToValueAtTime(vol, when + 0.015);
-  gain.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.88);
-  osc.start(when);
-  osc.stop(when + dur);
+  gain.gain.linearRampToValueAtTime(vol, when + 0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001, when + dur * 0.9);
+  osc.start(when); osc.stop(when + dur + 0.05);
 
-  // Warmth overtone
-  const osc2 = ctx.createOscillator();
-  const g2 = ctx.createGain();
+  const osc2 = ctx.createOscillator(), g2 = ctx.createGain();
   osc2.connect(g2); g2.connect(ctx.destination);
-  osc2.type = "sine";
+  osc2.type = 'sine';
   osc2.frequency.setValueAtTime(freq * 2.001, when);
-  g2.gain.setValueAtTime(vol * 0.12, when);
-  g2.gain.exponentialRampToValueAtTime(0.001, when + dur * 0.7);
+  g2.gain.setValueAtTime(vol * 0.1, when);
+  g2.gain.exponentialRampToValueAtTime(0.0001, when + dur * 0.6);
   osc2.start(when); osc2.stop(when + dur);
 }
 
-export default function HaydnPlayer() {
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(-1);
+function HaydnPlayer() {
+  const [isPlaying, setIsPlaying]   = useState(false);
   const [activeNote, setActiveNote] = useState(null);
-  const [lyric, setLyric] = useState("");
-  const [progress, setProgress] = useState(0);
-  const [tempo, setTempo] = useState(96);
-  const ctxRef = useRef(null);
-  const timeoutsRef = useRef([]);
-  const rafRef = useRef(null);
-  const startRef = useRef(null);
-  const totalDurRef = useRef(0);
+  const [warmNotes, setWarmNotes]   = useState(new Set());
+  const [lyric, setLyric]           = useState('');
+  const [progress, setProgress]     = useState(0);
+  const [tempo, setTempo]           = useState(96);
+  const [done, setDone]             = useState(false);
+
+  const ctxRef    = useRef(null);
+  const timersRef = useRef([]);
+  const rafRef    = useRef(null);
 
   const getCtx = () => {
-    if (!ctxRef.current) ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    if (!ctxRef.current)
+      ctxRef.current = new (window.AudioContext || window.webkitAudioContext)();
     return ctxRef.current;
   };
 
   const clearAll = useCallback(() => {
-    timeoutsRef.current.forEach(clearTimeout);
-    timeoutsRef.current = [];
+    timersRef.current.forEach(clearTimeout);
+    timersRef.current = [];
     cancelAnimationFrame(rafRef.current);
   }, []);
 
-  const stop = useCallback(() => {
+  const reset = useCallback(() => {
     clearAll();
-    setIsPlaying(false);
-    setActiveIndex(-1);
-    setActiveNote(null);
-    setLyric("");
-    setProgress(0);
+    setIsPlaying(false); setActiveNote(null); setWarmNotes(new Set());
+    setLyric(''); setProgress(0); setDone(false);
   }, [clearAll]);
 
-  const play = useCallback(() => {
+  const startPlay = useCallback(() => {
     const ctx = getCtx();
-    if (ctx.state === "suspended") ctx.resume();
+    if (ctx.state === 'suspended') ctx.resume();
+    setIsPlaying(true); setDone(false); setWarmNotes(new Set()); setProgress(0);
 
-    setIsPlaying(true);
-    setProgress(0);
-
-    const beatDur = 60 / tempo;
-    let when = ctx.currentTime + 0.08;
+    const beat  = 60 / tempo;
+    let when    = ctx.currentTime + 0.1;
     const start = when;
-    const total = melody.reduce((s, n) => s + n.dur * beatDur, 0);
-    totalDurRef.current = total;
-    startRef.current = start;
+    const total = MELODY.reduce((s, n) => s + n.d * beat, 0);
 
-    melody.forEach((item, i) => {
-      const dur = item.dur * beatDur;
-      if (NOTES[item.note]) playTone(ctx, NOTES[item.note], when, dur);
+    MELODY.forEach(item => {
+      const dur   = item.d * beat;
+      playTone(ctx, FREQ[item.n], when, dur);
       const delay = Math.max(0, (when - ctx.currentTime) * 1000);
-      const t = setTimeout(() => {
-        setActiveIndex(i);
-        setActiveNote(item.note);
-        if (item.lyric) setLyric(item.lyric);
-        setTimeout(() => setActiveNote(null), dur * 0.85 * 1000);
-      }, delay);
-      timeoutsRef.current.push(t);
+      const litMs = Math.round(dur * 850);
+      timersRef.current.push(setTimeout(() => {
+        setActiveNote(item.n);
+        setWarmNotes(prev => new Set([...prev, item.n]));
+        if (item.w) setLyric(item.w);
+        setTimeout(() => setActiveNote(null), litMs);
+      }, delay));
       when += dur;
     });
 
-    const endDelay = Math.max(0, (when - ctx.currentTime) * 1000);
-    const endT = setTimeout(() => {
-      setIsPlaying(false);
-      setActiveIndex(-1);
-      setLyric("✦ Fine ✦");
-      setProgress(100);
-    }, endDelay);
-    timeoutsRef.current.push(endT);
+    timersRef.current.push(setTimeout(() => {
+      setIsPlaying(false); setActiveNote(null);
+      setLyric('✦ Fine ✦'); setProgress(100); setDone(true);
+    }, Math.max(0, (when - ctx.currentTime) * 1000)));
 
     const tick = () => {
-      const elapsed = ctx.currentTime - start;
-      setProgress(Math.min(100, (elapsed / total) * 100));
-      if (elapsed < total) rafRef.current = requestAnimationFrame(tick);
+      const pct = Math.min(100, ((ctx.currentTime - start) / total) * 100);
+      setProgress(pct);
+      if (pct < 100) rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
   }, [tempo]);
 
   useEffect(() => () => clearAll(), [clearAll]);
 
-  const handlePlayStop = () => {
-    if (isPlaying) { stop(); } else { play(); }
-  };
-
-  const tapNote = (note) => {
+  const tapKey = note => {
     const ctx = getCtx();
-    if (ctx.state === "suspended") ctx.resume();
-    playTone(ctx, NOTES[note], ctx.currentTime, 0.5);
+    if (ctx.state === 'suspended') ctx.resume();
+    playTone(ctx, FREQ[note], ctx.currentTime, 0.55);
     setActiveNote(note);
-    setTimeout(() => setActiveNote(null), 400);
+    setTimeout(() => setActiveNote(null), 420);
   };
 
   return (
-    <div style={{
-      background: "linear-gradient(160deg, #1a0e07 0%, #2e1a0e 100%)",
-      minHeight: "100vh", display: "flex", alignItems: "center",
-      justifyContent: "center", padding: "20px", fontFamily: "Georgia, 'Times New Roman', serif"
-    }}>
-      <div style={{
-        background: "linear-gradient(135deg, #f5eed8 0%, #ede0be 100%)",
-        borderRadius: "4px", maxWidth: "520px", width: "100%",
-        padding: "36px 40px 32px",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.5), 0 20px 60px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.4)",
-        border: "1px solid rgba(201,168,76,0.4)", position: "relative"
-      }}>
-
-        {/* Header */}
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={{ fontSize: "11px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#7a5c2e", marginBottom: "4px" }}>
-            Franz Joseph Haydn · 1732–1809
-          </div>
-          <div style={{ fontSize: "28px", fontFamily: "Georgia, serif", fontStyle: "italic", color: "#1a1208", lineHeight: 1.1, marginBottom: "4px" }}>
-            Mr. Haydn's Theme
-          </div>
-          <div style={{ fontSize: "11px", letterSpacing: "0.12em", textTransform: "uppercase", color: "#9a7a4e" }}>
-            G 5-Finger Scale · 3/4 Time
-          </div>
+    <div style={{ background:'linear-gradient(160deg,#1a0e07 0%,#2e1a0e 100%)',
+      minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px' }}>
+      <div className="sheet">
+        <div className="header">
+          <div className="composer">Franz Joseph Haydn &nbsp;·&nbsp; 1732–1809, Austria</div>
+          <h1>Mr. Haydn's Theme</h1>
+          <div className="subtitle">G 5-Finger Scale &nbsp;·&nbsp; 3/4 Time &nbsp;·&nbsp; Faber Piano Adventures</div>
         </div>
 
-        {/* Lyric display */}
-        <div style={{
-          background: "#e8dcc0", border: "1px solid rgba(201,168,76,0.5)",
-          borderRadius: "2px", padding: "14px", marginBottom: "20px",
-          textAlign: "center", minHeight: "52px", display: "flex",
-          alignItems: "center", justifyContent: "center"
-        }}>
-          <span style={{
-            fontSize: lyric && lyric !== "" ? "22px" : "13px",
-            fontStyle: lyric && lyric !== "" ? "italic" : "normal",
-            color: lyric && lyric !== "" ? "#1a1208" : "#9a7a4e",
-            letterSpacing: lyric ? "0" : "0.1em",
-            transition: "all 0.2s"
-          }}>
-            {lyric || "Press Play to begin..."}
+        <div className="lyric-box">
+          <span className={`lyric-text${!lyric ? ' idle' : ''}`}>
+            {lyric || 'Press Play to begin…'}
           </span>
         </div>
 
-        {/* Progress bar */}
-        <div style={{
-          width: "100%", height: "4px", background: "#ddd0aa",
-          borderRadius: "2px", marginBottom: "20px", overflow: "hidden"
-        }}>
-          <div style={{
-            height: "100%", width: `${progress}%`,
-            background: "linear-gradient(90deg, #7a5c2e, #c9a84c)",
-            borderRadius: "2px", transition: "width 0.1s linear"
-          }} />
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width:`${progress}%` }} />
         </div>
 
-        {/* Tempo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "center", marginBottom: "20px" }}>
-          <span style={{ fontSize: "12px", color: "#7a5c2e", letterSpacing: "0.1em", textTransform: "uppercase" }}>Tempo</span>
-          <input type="range" min="50" max="160" value={tempo}
-            onChange={e => setTempo(Number(e.target.value))}
-            disabled={isPlaying}
-            style={{ width: "120px", accentColor: "#c9a84c" }}
-          />
-          <span style={{ fontSize: "12px", color: "#7a5c2e", minWidth: "55px" }}>♩= {tempo}</span>
+        <div className="tempo-row">
+          <span className="tempo-label">Tempo</span>
+          <input className="tempo-slider" type="range" min="50" max="160" value={tempo}
+            disabled={isPlaying} onChange={e => setTempo(Number(e.target.value))} />
+          <span className="tempo-val">♩= {tempo}</span>
         </div>
 
-        {/* Play button */}
-        <div style={{ display: "flex", gap: "10px", justifyContent: "center", marginBottom: "28px" }}>
-          <button onClick={handlePlayStop} style={{
-            background: isPlaying ? "#8b1a1a" : "#1a1208",
-            color: isPlaying ? "#fdd" : "#c9a84c",
-            border: `1.5px solid ${isPlaying ? "#c44" : "#c9a84c"}`,
-            padding: "10px 32px", fontSize: "15px", fontFamily: "Georgia, serif",
-            letterSpacing: "0.08em", borderRadius: "2px", cursor: "pointer",
-            minWidth: "130px", transition: "all 0.15s"
-          }}>
-            {isPlaying ? "⏹ Stop" : "▶ Play"}
+        <div className="btn-row">
+          <button className={`btn-play${isPlaying ? ' playing' : ''}`}
+            onClick={() => isPlaying ? reset() : startPlay()}>
+            {isPlaying ? '⏹ Stop' : '▶ Play'}
           </button>
-          {!isPlaying && progress > 0 && (
-            <button onClick={stop} style={{
-              background: "transparent", color: "#7a5c2e",
-              border: "1px solid rgba(122,92,46,0.4)",
-              padding: "10px 18px", fontSize: "13px",
-              fontFamily: "Georgia, serif", borderRadius: "2px", cursor: "pointer"
-            }}>↺ Reset</button>
-          )}
+          {done && <button className="btn-reset" onClick={reset}>↺ Reset</button>}
         </div>
 
-        {/* Piano keys */}
-        <div style={{ textAlign: "center", marginBottom: "8px" }}>
-          <div style={{ fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: "#9a7a4e", marginBottom: "8px" }}>
-            G · A · B · C · D
-          </div>
-          <div style={{ display: "flex", gap: "6px", justifyContent: "center" }}>
-            {scaleKeys.map(({ note, label }) => {
-              const isActive = activeNote === note;
-              const wasPlayed = activeIndex >= 0 && melody.slice(0, activeIndex + 1).some(m => m.note === note);
+        <div className="piano-section">
+          <div className="piano-label">Tap a key &nbsp;·&nbsp; G · A · B · C · D</div>
+          <div className="keys">
+            {SCALE_KEYS.map(note => {
+              const isLit  = activeNote === note;
+              const isWarm = warmNotes.has(note) && !isLit;
               return (
-                <div key={note} onClick={() => tapNote(note)} style={{
-                  width: "52px", height: "100px",
-                  background: isActive
-                    ? "linear-gradient(180deg, #fff9a0, #f5d800)"
-                    : wasPlayed
-                    ? "linear-gradient(180deg, #fdf5d0, #f0e4a0)"
-                    : "linear-gradient(180deg, #faf6ec, #e8e0d0)",
-                  border: isActive ? "2px solid #c9a84c" : "1px solid #bbb",
-                  borderRadius: "0 0 6px 6px",
-                  cursor: "pointer", display: "flex",
-                  alignItems: "flex-end", justifyContent: "center",
-                  paddingBottom: "8px",
-                  fontSize: "13px", fontWeight: "bold", color: isActive ? "#7a5c2e" : "#999",
-                  boxShadow: isActive
-                    ? "0 0 14px rgba(201,168,76,0.6), 0 3px 6px rgba(0,0,0,0.2)"
-                    : "0 3px 6px rgba(0,0,0,0.15)",
-                  transition: "all 0.08s",
-                  transform: isActive ? "scaleY(0.96)" : "scaleY(1)",
-                  userSelect: "none"
-                }}>
-                  {label}
+                <div key={note}
+                  className={`key${isLit ? ' lit' : isWarm ? ' warm' : ''}`}
+                  onClick={() => tapKey(note)}
+                  onTouchStart={e => { e.preventDefault(); tapKey(note); }}>
+                  {note.replace(/\d/,'')}
                 </div>
               );
             })}
           </div>
         </div>
 
-        <div style={{ textAlign: "center", fontSize: "10px", color: "#9a7a4e", marginTop: "14px", letterSpacing: "0.1em" }}>
-          * From Symphony No. 100, Finale · Faber Piano Adventures
-        </div>
+        <div className="footer">✦ From Symphony No. 100, Finale &nbsp;·&nbsp; arranged for piano</div>
       </div>
     </div>
   );
 }
+
+ReactDOM.createRoot(document.getElementById('root')).render(<HaydnPlayer />);
+</script>
+</body>
+</html>
