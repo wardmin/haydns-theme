@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mr. Haydn's Theme</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #f5eed8;
+    --parchment: #e8dcc0;
+    --ink: #1a1208;
+    --sepia: #7a5c2e;
+    --gold: #c9a84c;
+    --dark-wood: #2e1a0e;
+    --red-accent: #8b1a1a;
+    --key-white: #faf6ec;
+    --key-black: #1a1208;
+    --shadow: rgba(30,15,5,0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--dark-wood);
+    background-image:
+      repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px),
+      linear-gradient(180deg, #2e1a0e 0%, #1a0e07 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IM Fell English', Georgia, serif;
+    padding: 20px;
+  }
+
+  .sheet {
+    background: var(--cream);
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(122,92,46,0.06) 0%, transparent 50%);
+    border-radius: 4px;
+    max-width: 680px;
+    width: 100%;
+    padding: 40px 44px 36px;
+    box-shadow:
+      0 4px 6px rgba(0,0,0,0.5),
+      0 20px 60px rgba(0,0,0,0.6),
+      inset 0 1px 0 rgba(255,255,255,0.4),
+      inset 0 0 80px rgba(201,168,76,0.05);
+    position: relative;
+    border: 1px solid rgba(201,168,76,0.3);
+  }
+
+  .sheet::before {
+    content: '';
+    position: absolute;
+    left: 52px;
+    top: 0; bottom: 0;
+    width: 1px;
+    background: rgba(139,26,26,0.15);
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  .composer-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--parchment);
+    border: 1px solid var(--gold);
+    padding: 6px 14px 6px 8px;
+    border-radius: 2px;
+    margin-bottom: 16px;
+  }
+
+  .composer-portrait {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--sepia), var(--dark-wood));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    border: 2px solid var(--gold);
+  }
+
+  .composer-name {
+    font-family: 'IM Fell English', serif;
+    font-size: 11px;
+    color: var(--sepia);
+    line-height: 1.3;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 32px;
+    color: var(--ink);
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  h1 em {
+    font-style: italic;
+    color: var(--sepia);
+  }
+
+  .subtitle {
+    font-size: 12px;
+    color: var(--sepia);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+  }
+
+  /* Lyrics display */
+  .lyrics-display {
+    background: var(--parchment);
+    border: 1px solid rgba(201,168,76,0.4);
+    border-radius: 2px;
+    padding: 14px 18px;
+    margin-bottom: 24px;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lyrics-display::before {
+    content: '𝄞';
+    position: absolute;
+    left: 10px;
+    font-size: 32px;
+    color: rgba(122,92,46,0.2);
+    line-height: 1;
+    top: 50%;
+    transform: translateY(-50%);
+  }
+
+  .lyric-word {
+    font-size: 18px;
+    color: var(--ink);
+    font-style: italic;
+    transition: opacity 0.3s;
+    text-align: center;
+  }
+
+  .lyric-word.idle {
+    color: var(--sepia);
+    opacity: 0.5;
+    font-style: normal;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+  }
+
+  /* Note display */
+  .note-strip {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 20px;
+    padding: 10px 12px;
+    background: rgba(201,168,76,0.06);
+    border-top: 1px solid rgba(201,168,76,0.2);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .note-pip {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--parchment);
+    background: var(--parchment);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    color: var(--sepia);
+    transition: all 0.1s;
+    position: relative;
+  }
+
+  .note-pip.active {
+    background: var(--ink);
+    border-color: var(--gold);
+    color: var(--gold);
+    transform: scale(1.2);
+    box-shadow: 0 0 10px rgba(201,168,76,0.4);
+  }
+
+  .note-pip.played {
+    background: rgba(201,168,76,0.2);
+    border-color: var(--gold);
+    color: var(--sepia);
+  }
+
+  /* Controls */
+  .controls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  button {
+    font-family: 'IM Fell English', serif;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+  }
+
+  .btn-play {
+    background: var(--ink);
+    color: var(--gold);
+    border: 1.5px solid var(--gold);
+    padding: 10px 28px;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    border-radius: 2px;
+    min-width: 130px;
+  }
+
+  .btn-play:hover {
+    background: var(--dark-wood);
+    box-shadow: 0 0 16px rgba(201,168,76,0.25);
+    transform: translateY(-1px);
+  }
+
+  .btn-play:active { transform: translateY(0); }
+
+  .btn-play.playing {
+    background: var(--red-accent);
+    border-color: #c44;
+    color: #fad;
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--sepia);
+    border: 1px solid rgba(122,92,46,0.4);
+    padding: 10px 18px;
+    font-size: 13px;
+    border-radius: 2px;
+  }
+
+  .btn-secondary:hover {
+    background: var(--parchment);
+    color: var(--ink);
+  }
+
+  /* Tempo */
+  .tempo-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .tempo-label {
+    font-size: 12px;
+    color: var(--sepia);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    min-width: 80px;
+    text-align: right;
+  }
+
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 120px;
+    height: 4px;
+    background: var(--parchment);
+    border-radius: 2px;
+    border: 1px solid rgba(201,168,76,0.3);
+    outline: none;
+  }
+
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    background: var(--gold);
+    border-radius: 50%;
+    cursor: pointer;
+  }
+
+  .tempo-value {
+    font-size: 12px;
+    color: var(--sepia);
+    min-width: 55px;
+  }
+
+  /* Piano keyboard */
+  .piano-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .piano-label {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--sepia);
+    opacity: 0.7;
+  }
+
+  .piano {
+    display: flex;
+    position: relative;
+    height: 90px;
+    gap: 2px;
+    padding: 0 4px;
+    background: var(--dark-wood);
+    border: 2px solid var(--dark-wood);
+    border-radius: 0 0 6px 6px;
+    box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 2px 4px rgba(0,0,0,0.3);
+  }
+
+  .white-key {
+    width: 36px;
+    height: 86px;
+    background: linear-gradient(180deg, var(--key-white) 0%, #e8e0d0 100%);
+    border: 1px solid #bbb;
+    border-radius: 0 0 5px 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 6px;
+    font-size: 10px;
+    color: #888;
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    position: relative;
+    transition: all 0.05s;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2), inset 0 -2px 3px rgba(0,0,0,0.05);
+    flex-shrink: 0;
+  }
+
+  .white-key:hover {
+    background: linear-gradient(180deg, #fffef8 0%, #f0e8d8 100%);
+  }
+
+  .white-key.lit {
+    background: linear-gradient(180deg, #fff9d0 0%, #f5e070 100%);
+    border-color: var(--gold);
+    box-shadow: 0 0 12px rgba(201,168,76,0.5), 0 3px 6px rgba(0,0,0,0.2);
+    color: var(--sepia);
+  }
+
+  .white-key.in-scale {
+    background: linear-gradient(180deg, #fdf5e0 0%, #f0e4c0 100%);
+  }
+
+  .black-key {
+    position: absolute;
+    width: 22px;
+    height: 52px;
+    background: linear-gradient(180deg, #2a2a2a 0%, var(--key-black) 100%);
+    border-radius: 0 0 4px 4px;
+    top: 0;
+    cursor: pointer;
+    z-index: 2;
+    box-shadow: 2px 4px 8px rgba(0,0,0,0.6), inset 0 -2px 3px rgba(255,255,255,0.05);
+    transition: all 0.05s;
+  }
+
+  .black-key:hover {
+    background: linear-gradient(180deg, #3a3a3a 0%, #111 100%);
+  }
+
+  .black-key.lit {
+    background: linear-gradient(180deg, #6b5500 0%, #4a3a00 100%);
+    box-shadow: 0 0 10px rgba(201,168,76,0.6), 2px 4px 8px rgba(0,0,0,0.6);
+  }
+
+  /* Progress bar */
+  .progress-bar {
+    width: 100%;
+    height: 3px;
+    background: var(--parchment);
+    border-radius: 2px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--sepia), var(--gold));
+    width: 0%;
+    transition: width 0.1s linear;
+    border-radius: 2px;
+  }
+
+  /* Repeat badge */
+  .repeat-badge {
+    text-align: center;
+    font-size: 10px;
+    color: var(--sepia);
+    opacity: 0.6;
+    margin-top: 12px;
+    letter-spacing: 0.12em;
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+  <div class="header">
+    <div class="composer-badge">
+      <div class="composer-portrait">🎼</div>
+      <div class="composer-name">Franz Joseph Haydn<br>1732–1809, Austria</div>
+    </div>
+    <h1><em>Mr. Haydn's</em> Theme</h1>
+    <div class="subtitle">G 5-Finger Scale · 3/4 Time · Faber Piano Adventures</div>
+  </div>
+
+  <div class="lyrics-display">
+    <div class="lyric-word idle" id="lyricDisplay">Press Play to begin...</div>
+  </div>
+
+  <div class="note-strip" id="noteStrip"></div>
+
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill"></div>
+  </div>
+
+  <div class="tempo-row">
+    <span class="tempo-label">Tempo</span>
+    <input type="range" id="tempoSlider" min="50" max="180" value="100">
+    <span class="tempo-value" id="tempoVal">♩= 100</span>
+  </div>
+
+  <div class="controls">
+    <button class="btn-play" id="playBtn" onclick="togglePlay()">▶ Play</button>
+    <button class="btn-secondary" onclick="stopAndReset()">↺ Reset</button>
+  </div>
+
+  <div class="piano-wrap">
+    <div class="piano-label">G 5-Finger Scale: G · A · B · C · D</div>
+    <div class="piano" id="piano"></div>
+  </div>
+
+  <div class="repeat-badge">* From Symphony No. 100, Finale · arranged for piano</div>
+</div>
+
+<script>
+// Audio context
+let audioCtx = null;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playNote(freq, duration, when, volume = 0.4) {
+  const ctx = getAudioCtx();
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.type = 'triangle';
+  osc.frequency.setValueAtTime(freq, when);
+
+  // Slightly detuned overtone for warmth
+  const osc2 = ctx.createOscillator();
+  const gain2 = ctx.createGain();
+  osc2.connect(gain2);
+  gain2.connect(ctx.destination);
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(freq * 2.002, when);
+  gain2.gain.setValueAtTime(volume * 0.15, when);
+  gain2.gain.exponentialRampToValueAtTime(0.001, when + duration * 0.9);
+  osc2.start(when);
+  osc2.stop(when + duration);
+
+  gain.gain.setValueAtTime(0, when);
+  gain.gain.linearRampToValueAtTime(volume, when + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.001, when + duration * 0.92);
+  osc.start(when);
+  osc.stop(when + duration);
+}
+
+function playChord(freqs, duration, when, volume = 0.18) {
+  freqs.forEach(f => playNote(f, duration, when, volume));
+}
+
+// Note frequencies
+const NOTES = {
+  G3: 196.00, A3: 220.00, B3: 246.94, C4: 261.63, D4: 293.66,
+  G4: 392.00, A4: 440.00, B4: 493.88, C5: 523.25, D5: 587.33,
+  G2: 98.00, D3: 146.83, B2: 123.47
+};
+
+// Bass chords (left hand simplified)
+const BASS = {
+  G: [NOTES.G2, NOTES.D3, NOTES.B3],
+  D7: [NOTES.D3, NOTES.A3, NOTES.C4],
+};
+
+// The melody with lyrics, durations (in beats), and bass chord
+// duration: 1=quarter, 2=half, 3=dotted-half, 1.5=dotted-quarter
+const melody = [
+  // Measure 1: "My dear Mis-"
+  { note: 'G4', dur: 1, lyric: 'My' },
+  { note: 'G4', dur: 1, lyric: 'dear' },
+  { note: 'A4', dur: 1, lyric: 'Mis-' },
+  // Measure 2: "-ter Hay-dn,"
+  { note: 'B4', dur: 1, lyric: '-ter' },
+  { note: 'A4', dur: 1, lyric: 'Hay-' },
+  { note: 'G4', dur: 1, lyric: '-dn,' },
+  // Measure 3: "your wig is"
+  { note: 'D5', dur: 1, lyric: 'your' },
+  { note: 'D5', dur: 1, lyric: 'wig' },
+  { note: 'D5', dur: 1, lyric: 'is' },
+  // Measure 4: "quite fun."
+  { note: 'D5', dur: 1.5, lyric: 'quite' },
+  { note: 'C5', dur: 0.5, lyric: '' },
+  { note: 'B4', dur: 2, lyric: 'fun.' },
+  // Measure 5 (mp): "Could"
+  { note: 'D5', dur: 1, lyric: 'Could' },
+  // Measure 6: "you tell me"
+  { note: 'D5', dur: 1, lyric: 'you' },
+  { note: 'C5', dur: 1, lyric: 'tell' },
+  { note: 'B4', dur: 1, lyric: 'me' },
+  // Measure 7: "where I could"
+  { note: 'C5', dur: 1, lyric: 'where' },
+  { note: 'B4', dur: 1, lyric: 'I' },
+  { note: 'A4', dur: 1, lyric: 'could' },
+  // Measure 8: "buy"
+  { note: 'B4', dur: 3, lyric: 'buy' },
+  // Measure 9: "one?"
+  { note: 'G4', dur: 3, lyric: 'one?' },
+  // -- REPEAT --
+  // Measure 1r
+  { note: 'G4', dur: 1, lyric: 'My' },
+  { note: 'G4', dur: 1, lyric: 'dear' },
+  { note: 'A4', dur: 1, lyric: 'Mis-' },
+  { note: 'B4', dur: 1, lyric: '-ter' },
+  { note: 'A4', dur: 1, lyric: 'Hay-' },
+  { note: 'G4', dur: 1, lyric: '-dn,' },
+  { note: 'D5', dur: 1, lyric: 'your' },
+  { note: 'D5', dur: 1, lyric: 'wig' },
+  { note: 'D5', dur: 1, lyric: 'is' },
+  { note: 'D5', dur: 1.5, lyric: 'quite' },
+  { note: 'C5', dur: 0.5, lyric: '' },
+  { note: 'B4', dur: 2, lyric: 'fun.' },
+  { note: 'D5', dur: 1, lyric: 'When' },
+  { note: 'D5', dur: 1, lyric: 'I' },
+  { note: 'C5', dur: 1, lyric: 'play' },
+  { note: 'B4', dur: 1, lyric: 'this' },
+  { note: 'C5', dur: 1, lyric: 'song,' },
+  { note: 'B4', dur: 1, lyric: 'should' },
+  { note: 'A4', dur: 1, lyric: 'I' },
+  { note: 'B4', dur: 3, lyric: 'wear' },
+  { note: 'G4', dur: 3, lyric: 'one?' },
+];
+
+// Piano keyboard setup
+const whiteNotes = ['C4','D4','E4','F4','G4','A4','B4','C5','D5','E5'];
+const blackPositions = { 'C#4':0,'D#4':1,'F#4':3,'G#4':4,'A#4':5,'C#5':7,'D#5':8 };
+const scaleNotes = ['G4','A4','B4','C5','D5'];
+
+function buildPiano() {
+  const piano = document.getElementById('piano');
+  piano.innerHTML = '';
+
+  const containerWidth = whiteNotes.length * 38; // 36px + 2px gap
+  piano.style.width = (containerWidth + 8) + 'px';
+
+  whiteNotes.forEach((note, i) => {
+    const key = document.createElement('div');
+    key.className = 'white-key' + (scaleNotes.includes(note) ? ' in-scale' : '');
+    key.id = 'key-' + note;
+    key.textContent = note.replace(/\d/, '');
+    key.onclick = () => { getAudioCtx(); playNote(NOTES[note], 0.6, audioCtx.currentTime); lightKey(note, 400); };
+    piano.appendChild(key);
+  });
+
+  // Black keys
+  const keyWidth = 38;
+  Object.entries(blackPositions).forEach(([note, idx]) => {
+    const key = document.createElement('div');
+    key.className = 'black-key';
+    key.id = 'key-' + note;
+    key.style.left = (8 + idx * keyWidth + keyWidth * 0.6) + 'px';
+    if (NOTES[note]) key.onclick = () => { getAudioCtx(); playNote(NOTES[note], 0.5, audioCtx.currentTime); lightKey(note, 300); };
+    piano.appendChild(key);
+  });
+}
+
+function lightKey(note, ms) {
+  const el = document.getElementById('key-' + note);
+  if (!el) return;
+  el.classList.add('lit');
+  setTimeout(() => el.classList.remove('lit'), ms);
+}
+
+// Note pips
+function buildNotePips() {
+  const strip = document.getElementById('noteStrip');
+  strip.innerHTML = '';
+  melody.forEach((n, i) => {
+    if (!n.note) return;
+    const pip = document.createElement('div');
+    pip.className = 'note-pip';
+    pip.id = 'pip-' + i;
+    pip.textContent = n.note.replace(/\d/, '');
+    strip.appendChild(pip);
+  });
+}
+
+// Playback
+let isPlaying = false;
+let timeouts = [];
+let animFrames = [];
+let startTime = null;
+let totalDuration = 0;
+
+function getBeatDuration() {
+  const bpm = parseInt(document.getElementById('tempoSlider').value);
+  return 60 / bpm;
+}
+
+function togglePlay() {
+  if (isPlaying) {
+    stopAndReset();
+  } else {
+    startPlayback();
+  }
+}
+
+function startPlayback() {
+  getAudioCtx();
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+
+  isPlaying = true;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = '⏹ Stop';
+  btn.classList.add('playing');
+
+  const beatDur = getBeatDuration();
+  let when = audioCtx.currentTime + 0.1;
+  let elapsed = 0;
+
+  // Calculate total duration
+  totalDuration = melody.reduce((sum, n) => sum + n.dur * beatDur, 0);
+  startTime = when;
+
+  melody.forEach((note, i) => {
+    const dur = note.dur * beatDur;
+    const schedTime = when;
+    const noteName = note.note;
+    const lyric = note.lyric;
+
+    // Schedule audio
+    if (NOTES[noteName]) {
+      playNote(NOTES[noteName], dur * 0.85, schedTime, 0.4);
+    }
+
+    // Schedule visual + lyric
+    const delay = (schedTime - audioCtx.currentTime) * 1000;
+    const t = setTimeout(() => {
+      // Light key
+      if (noteName) lightKey(noteName, dur * 0.85 * 1000);
+
+      // Update pip
+      document.querySelectorAll('.note-pip').forEach(p => p.classList.remove('active'));
+      const pip = document.getElementById('pip-' + i);
+      if (pip) {
+        pip.classList.add('active');
+        pip.classList.add('played');
+      }
+
+      // Lyric
+      if (lyric) {
+        const ld = document.getElementById('lyricDisplay');
+        ld.textContent = lyric;
+        ld.classList.remove('idle');
+        ld.style.animation = 'none';
+        ld.offsetHeight;
+        ld.style.animation = '';
+      }
+    }, Math.max(0, delay));
+
+    timeouts.push(t);
+    when += dur;
+  });
+
+  // End
+  const endDelay = (when - audioCtx.currentTime) * 1000;
+  const endT = setTimeout(() => {
+    resetUI();
+    document.getElementById('lyricDisplay').textContent = '✦ Fine ✦';
+    document.getElementById('lyricDisplay').classList.remove('idle');
+  }, endDelay);
+  timeouts.push(endT);
+
+  // Progress animation
+  function updateProgress() {
+    if (!isPlaying) return;
+    const elapsed = audioCtx.currentTime - startTime;
+    const pct = Math.min(100, (elapsed / totalDuration) * 100);
+    document.getElementById('progressFill').style.width = pct + '%';
+    if (pct < 100) requestAnimationFrame(updateProgress);
+  }
+  requestAnimationFrame(updateProgress);
+}
+
+function stopAndReset() {
+  timeouts.forEach(clearTimeout);
+  timeouts = [];
+  resetUI();
+  document.getElementById('progressFill').style.width = '0%';
+  document.getElementById('lyricDisplay').textContent = 'Press Play to begin...';
+  document.getElementById('lyricDisplay').classList.add('idle');
+  document.querySelectorAll('.note-pip').forEach(p => {
+    p.classList.remove('active', 'played');
+  });
+}
+
+function resetUI() {
+  isPlaying = false;
+  const btn = document.getElementById('playBtn');
+  btn.textContent = '▶ Play';
+  btn.classList.remove('playing');
+}
+
+// Tempo slider
+document.getElementById('tempoSlider').addEventListener('input', function() {
+  document.getElementById('tempoVal').textContent = '♩= ' + this.value;
+});
+
+// Init
+buildPiano();
+buildNotePips();
+</script>
+</body>
+</html>
